@@ -3,29 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Clear Cupids</title>
+  <title>Eros & Cosmos: A Jornada</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <main class="hud-frame" aria-label="Área do minijogo">
-    <div class="hud-grid"></div>
-    <div class="hud-vignette"></div>
+<body data-stage="prologue">
 
-    <div class="hud-status" aria-live="polite">
-      <span class="status-dot"></span>
-      <span id="counter">0/13</span>
-    </div>
+  <!-- ==================== PRÓLOGO ==================== -->
+  <section id="stage-prologue" class="game-stage active" data-theme="blue">
+    <div class="stage-bg-grid"></div>
+    <div class="stage-content">
+      <div class="narrative-card">
+        <span class="stage-tag">Prólogo — Apresentação Inicial</span>
+        <h1>O Despertar do Cosmos</h1>
+        <p class="narrative-text">
+          No vasto silêncio do espaço profundo, energias primordiais começam a oscilar. O mito e a mecânica se entrelaçam em uma varredura cósmica necessária para reordenar o fluxo das eras. Antes de decifrar os textos e as sinfonias do mundo, é preciso purificar o horizonte estelar.
+        </p>
 
-    <canvas id="gameCanvas"></canvas>
+        <div class="reference-grid">
+          <div class="ref-item">
+            <div class="ref-icon">🌌</div>
+            <div class="ref-desc"><strong>Varredura Estelar</strong><br>Eliminação de interferências no campo visual.</div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-icon">⚡</div>
+            <div class="ref-desc"><strong>Precisão Absoluta</strong><br>Interação direta de alta performance tátil e mouse.</div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-icon">📜</div>
+            <div class="ref-desc"><strong>Evolução Narrativa</strong><br>Transição de fases rumo à literatura e à música.</div>
+          </div>
+        </div>
 
-    <div id="winOverlay" class="win-overlay hidden" role="status" aria-live="assertive">
-      <div class="win-card">
-        <p class="win-title">Task concluída</p>
-        <p class="win-sub">13/13 cupidos acertados</p>
-        <button id="restartBtn" type="button">Jogar novamente</button>
+        <div class="action-bar">
+          <button id="startPrologueBtn" class="primary-btn" type="button">Iniciar Nível I — Cupidos</button>
+        </div>
       </div>
     </div>
-  </main>
+  </section>
+
+  <!-- ==================== NÍVEL I: CUPIDOS ==================== -->
+  <section id="stage-level1" class="game-stage" data-theme="blue">
+    <div class="hud-frame" aria-label="Área do minijogo Cupidos">
+      <div class="hud-grid"></div>
+      <div class="hud-vignette"></div>
+
+      <div class="hud-status" aria-live="polite">
+        <span class="status-dot"></span>
+        <span id="counter">0/13</span>
+      </div>
+
+      <canvas id="gameCanvas"></canvas>
+
+      <div id="winOverlay" class="win-overlay hidden" role="status" aria-live="assertive">
+        <div class="win-card">
+          <p class="win-title">Task Nível I Concluída</p>
+          <p class="win-sub">13/13 cupidos acertados com sucesso</p>
+          <button id="advanceToInt1Btn" class="primary-btn" type="button">Avançar para o Interlúdio I</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== INTERLÚDIO I ==================== -->
+  <section id="stage-interlude1" class="game-stage" data-theme="purple">
+    <div class="stage-bg-grid"></div>
+    <div class="stage-content">
+      <div class="narrative-card">
+        <span class="stage-tag">Interlúdio I — Segunda Apresentação</span>
+        <h1>A Câmara dos Textos e do Desejo</h1>
+        <p class="narrative-text">
+          O céu estelar silencia e dá lugar a penumbra das bibliotecas proibidas. Aqui, o eco das palavras de Henry Miller, Anaïs Nin e Hilda Hilst dissolve as fronteiras entre o corpo e a página. O conhecimento exige interpretação; a leitura, um mergulho profundo.
+        </p>
+        <div class="quote-preview">
+          “Tornar-me numa obra de arte importa-me mais do que criar uma obra de arte.” — Anaïs Nin
+        </div>
+        <div class="action-bar">
+          <button id="startLevel2Btn" class="primary-btn purple-theme" type="button">Entrar no Nível II — Literatura</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== NÍVEL II: LITERATURA ==================== -->
+  <section id="stage-level2" class="game-stage" data-theme="purple">
+    <div class="lit-container">
+      <header class="lit-header">
+        <span class="stage-tag">Nível II — Literatura</span>
+        <div class="lit-progress-bar">
+          <div id="litProgressFill" class="lit-progress-fill"></div>
+        </div>
+        <span id="litStepIndicator" class="lit-step-indicator">Fase 1 de 3</span>
+      </header>
+
+      <div id="litCardContainer" class="lit-card">
+        <!-- Inserido dinamicamente via script.js -->
+      </div>
+    </div>
+
+    <div id="litWinOverlay" class="win-overlay hidden" role="status" aria-live="assertive">
+      <div class="win-card purple-card">
+        <p class="win-title">Imersão Literária Concluída</p>
+        <p class="win-sub">Você decifrou as vozes de Miller, Nin e Hilst.</p>
+        <button id="advanceToInt2Btn" class="primary-btn purple-theme" type="button">Avançar para o Interlúdio II</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== INTERLÚDIO II ==================== -->
+  <section id="stage-interlude2" class="game-stage" data-theme="red">
+    <div class="stage-bg-grid"></div>
+    <div class="stage-content">
+      <div class="narrative-card red-card">
+        <span class="stage-tag">Interlúdio II — Terceira Apresentação</span>
+        <h1>A Última Frequência</h1>
+        <p class="narrative-text">
+          Após a pureza do espaço e a densidade visceral da palavra escrita, restam apenas as vibrações finais. O horizonte escarlate anuncia o portal para o território da música e do som absoluto. O campo está preparado.
+        </p>
+        <div class="action-bar">
+          <button id="startLevel3Btn" class="primary-btn red-theme" type="button">Acessar o Nível III — Música</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== NÍVEL III: MÚSICA ==================== -->
+  <section id="stage-level3" class="game-stage" data-theme="red">
+    <div class="music-container">
+      <div class="narrative-card red-card music-sandbox">
+        <span class="stage-tag">Nível III — Música (Fase Preparatória)</span>
+        <h1>O Santuário Sonoro</h1>
+        <p class="narrative-text">
+          Esta frequência está pronta para receber a futura mecânica musical do projeto. O ambiente encontra-se estabilizado em tons de vermelho-escuro, aguardando a composição dos próximos acordes interativos.
+        </p>
+        <div class="music-visualizer-mock">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="action-bar">
+          <button id="restartAllBtn" class="primary-btn red-theme" type="button">Reiniciar Toda a Jornada</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <script src="script.js"></script>
 </body>
