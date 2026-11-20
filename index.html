@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Clear Cupids</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="hud-frame" aria-label="Área do minijogo">
+    <div class="hud-grid"></div>
+    <div class="hud-vignette"></div>
+
+    <div class="hud-status" aria-live="polite">
+      <span class="status-dot"></span>
+      <span id="counter">0/13</span>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="winOverlay" class="win-overlay hidden" role="status" aria-live="assertive">
+      <div class="win-card">
+        <p class="win-title">Task concluída</p>
+        <p class="win-sub">13/13 cupidos acertados</p>
+        <button id="restartBtn" type="button">Jogar novamente</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
