@@ -1,9 +1,54 @@
 (() => {
+  // --- GERENCIAMENTO DE ESTÁGIOS E FLUXO ---
+  const stages = {
+    prologue: document.getElementById("stage-prologue"),
+    level1: document.getElementById("stage-level1"),
+    interlude1: document.getElementById("stage-interlude1"),
+    level2: document.getElementById("stage-level2"),
+    interlude2: document.getElementById("stage-interlude2"),
+    level3: document.getElementById("stage-level3"),
+  };
+
+  function switchStage(stageName) {
+    Object.values(stages).forEach(s => s.classList.remove("active"));
+    if (stages[stageName]) {
+      stages[stageName].classList.add("active");
+      
+      // Atualiza tema visual do corpo
+      if (stageName === "prologue" || stageName === "level1") {
+        document.body.setAttribute("data-stage-theme", "blue");
+      } else if (stageName === "interlude1" || stageName === "level2") {
+        document.body.setAttribute("data-stage-theme", "purple");
+      } else {
+        document.body.setAttribute("data-stage-theme", "red");
+      }
+
+      // Se entrou no Nível 1, redimensiona o canvas dos cupidos
+      if (stageName === "level1") {
+        window.dispatchEvent(new Event("resize"));
+      }
+    }
+  }
+
+  // Botões de transição narrativa
+  document.getElementById("startPrologueBtn").addEventListener("click", () => switchStage("level1"));
+  document.getElementById("advanceToInt1Btn").addEventListener("click", () => switchStage("interlude1"));
+  document.getElementById("startLevel2Btn").addEventListener("click", () => {
+    switchStage("level2");
+    initLitLevel();
+  });
+  document.getElementById("advanceToInt2Btn").addEventListener("click", () => switchStage("interlude2"));
+  document.getElementById("startLevel3Btn").addEventListener("click", () => switchStage("level3"));
+  document.getElementById("restartAllBtn").addEventListener("click", () => {
+    resetGameCupids();
+    switchStage("prologue");
+  });
+
+  // ==================== NÍVEL I: CUPIDOS (Mecânica preservada e integrada) ====================
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const counterEl = document.getElementById("counter");
   const winOverlay = document.getElementById("winOverlay");
-  const restartBtn = document.getElementById("restartBtn");
 
   const TARGET_HITS = 13;
   const MAX_ACTIVE_CUPIDS = 5;
@@ -23,7 +68,7 @@
   let laserEffects = [];
   let crosshair = { x: -100, y: -100, active: false };
 
-  function resize() {
+  function resizeCupidCanvas() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     width = window.innerWidth;
     height = window.innerHeight;
@@ -66,8 +111,6 @@
 
     let x = 0;
     let y = 0;
-
-    // Entra pelas bordas mirando um ponto interno aleatório para atravessar a tela
     const targetX = width * (0.2 + Math.random() * 0.6);
     const targetY = height * (0.2 + Math.random() * 0.6);
 
@@ -104,7 +147,6 @@
   }
 
   function createHitEffect(x, y) {
-    // Disparo rápido estilo Among Us vindo da base da tela
     laserEffects.push({
       startX: width * 0.5,
       startY: height,
@@ -114,7 +156,6 @@
       maxLife: 0.14
     });
 
-    // Partículas de coração e brilho
     const count = 14;
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
@@ -138,13 +179,13 @@
     counterEl.textContent = `${hits}/${TARGET_HITS}`;
   }
 
-  function finishGame() {
+  function finishCupidsTask() {
     isFinished = true;
     cupids = [];
     winOverlay.classList.remove("hidden");
   }
 
-  function resetGame() {
+  function resetGameCupids() {
     hits = 0;
     isFinished = false;
     cupids = [];
@@ -160,7 +201,7 @@
   }
 
   function handlePointerDown(event) {
-    if (isFinished) return;
+    if (isFinished || !stages.level1.classList.contains("active")) return;
 
     const rect = canvas.getBoundingClientRect();
     const px = event.clientX - rect.left;
@@ -170,7 +211,6 @@
     crosshair.y = py;
     crosshair.active = true;
 
-    // Verifica do cupido mais recente (na frente) para o mais antigo
     for (let i = cupids.length - 1; i >= 0; i--) {
       const c = cupids[i];
       if (c.hit) continue;
@@ -188,7 +228,7 @@
         createHitEffect(c.x, c.y);
 
         if (hits >= TARGET_HITS) {
-          setTimeout(finishGame, 220);
+          setTimeout(finishCupidsTask, 220);
         } else {
           spawnCupid();
         }
@@ -233,7 +273,6 @@
     ctx.translate(c.x, c.y + bobOffset);
     ctx.scale(c.facing, 1);
 
-    // Brilho sutil ao redor do cupido
     const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, c.radius * 1.15);
     glow.addColorStop(0, "rgba(255, 166, 201, 0.22)");
     glow.addColorStop(1, "rgba(255, 166, 201, 0)");
@@ -242,7 +281,6 @@
     ctx.arc(0, 0, c.radius * 1.15, 0, Math.PI * 2);
     ctx.fill();
 
-    // Asas
     ctx.save();
     ctx.translate(-6, -2);
     ctx.rotate(-0.25 + wingFlap);
@@ -259,7 +297,6 @@
     ctx.fill();
     ctx.restore();
 
-    // Túnica / corpo delicado
     ctx.fillStyle = "#ffe6f0";
     ctx.beginPath();
     ctx.moveTo(-4, -2);
@@ -269,7 +306,6 @@
     ctx.closePath();
     ctx.fill();
 
-    // Faixa rosa na túnica
     ctx.strokeStyle = "#ff85b3";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -277,33 +313,28 @@
     ctx.lineTo(6, 7);
     ctx.stroke();
 
-    // Cabeça
     ctx.fillStyle = "#ffd9c9";
     ctx.beginPath();
     ctx.arc(1, -10, 7.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cabelo dourado suave
     ctx.fillStyle = "#f7cf78";
     ctx.beginPath();
     ctx.arc(0, -12, 7.5, Math.PI * 0.9, Math.PI * 2.1);
     ctx.fill();
 
-    // Auréola
     ctx.strokeStyle = "#ffe082";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.ellipse(1, -21, 6.5, 2.2, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Arco
     ctx.strokeStyle = "#d99b66";
     ctx.lineWidth = 2.2;
     ctx.beginPath();
     ctx.arc(9, 1, 12, -Math.PI * 0.45, Math.PI * 0.45);
     ctx.stroke();
 
-    // Corda do arco
     ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -312,7 +343,6 @@
     ctx.lineTo(11, 12.5);
     ctx.stroke();
 
-    // Flecha com ponta de coração
     ctx.strokeStyle = "#f3d2b3";
     ctx.lineWidth = 1.6;
     ctx.beginPath();
@@ -325,8 +355,8 @@
     ctx.restore();
   }
 
-  function update(dt) {
-    if (!isFinished) {
+  function updateCupids(dt) {
+    if (!isFinished && stages.level1.classList.contains("active")) {
       spawnTimer += dt;
       if (spawnTimer >= 0.65) {
         spawnTimer = 0;
@@ -335,24 +365,16 @@
     }
 
     const boundMargin = 65;
-
     for (let i = 0; i < cupids.length; i++) {
       const c = cupids[i];
       c.x += c.vx * dt;
       c.y += c.vy * dt;
 
-      // Mantém os cupidos circulando dentro da área sem escapar para sempre
-      if (c.x < -boundMargin && c.vx < 0) {
-        c.vx = Math.abs(c.vx);
-      } else if (c.x > width + boundMargin && c.vx > 0) {
-        c.vx = -Math.abs(c.vx);
-      }
+      if (c.x < -boundMargin && c.vx < 0) c.vx = Math.abs(c.vx);
+      else if (c.x > width + boundMargin && c.vx > 0) c.vx = -Math.abs(c.vx);
 
-      if (c.y < -boundMargin && c.vy < 0) {
-        c.vy = Math.abs(c.vy);
-      } else if (c.y > height + boundMargin && c.vy > 0) {
-        c.vy = -Math.abs(c.vy);
-      }
+      if (c.y < -boundMargin && c.vy < 0) c.vy = Math.abs(c.vy);
+      else if (c.y > height + boundMargin && c.vy > 0) c.vy = -Math.abs(c.vy);
 
       c.facing = c.vx >= 0 ? 1 : -1;
     }
@@ -363,23 +385,18 @@
       p.y += p.vy * dt;
       p.vy += 40 * dt;
       p.life -= dt;
-      if (p.life <= 0) {
-        particles.splice(i, 1);
-      }
+      if (p.life <= 0) particles.splice(i, 1);
     }
 
     for (let i = laserEffects.length - 1; i >= 0; i--) {
       laserEffects[i].life -= dt;
-      if (laserEffects[i].life <= 0) {
-        laserEffects.splice(i, 1);
-      }
+      if (laserEffects[i].life <= 0) laserEffects.splice(i, 1);
     }
   }
 
-  function render(timeSeconds) {
+  function renderCupids(timeSeconds) {
     ctx.clearRect(0, 0, width, height);
 
-    // Estrelas discretas no fundo espacial
     for (let i = 0; i < stars.length; i++) {
       const s = stars[i];
       const twinkle = 0.65 + 0.35 * Math.sin(timeSeconds * s.twinkleSpeed + s.phase);
@@ -391,8 +408,7 @@
     }
     ctx.globalAlpha = 1;
 
-    // Mira sutil no centro/ponteiro (inspiração HUD Among Us)
-    if (crosshair.active && !isFinished) {
+    if (crosshair.active && !isFinished && stages.level1.classList.contains("active")) {
       ctx.save();
       ctx.strokeStyle = "rgba(255, 166, 201, 0.35)";
       ctx.lineWidth = 1.2;
@@ -413,7 +429,6 @@
       ctx.restore();
     }
 
-    // Feixe de disparo ao acertar
     for (let i = 0; i < laserEffects.length; i++) {
       const l = laserEffects[i];
       const alpha = l.life / l.maxLife;
@@ -427,12 +442,10 @@
       ctx.restore();
     }
 
-    // Cupidos
     for (let i = 0; i < cupids.length; i++) {
       drawCupid(cupids[i], timeSeconds);
     }
 
-    // Partículas de acerto
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
       const alpha = Math.max(0, p.life / p.maxLife);
@@ -450,22 +463,142 @@
     }
   }
 
-  function loop(timestamp) {
+  // ==================== NÍVEL II: LITERATURA ====================
+  const litStages = [
+    {
+      author: "Henry Miller",
+      excerpt: "“O objetivo da vida não é ser perfeito, mas continuar a ser humano, desenhando com as próprias mãos o mapa da paixão e do erro.”",
+      question: "Para Miller, qual é o papel essencial da experiência humana nos relacionamentos e na arte?",
+      options: [
+        { text: "A busca incessante pela validação e rigidez moral.", correct: false },
+        { text: "A aceitação da falibilidade e a exploração genuína da paixão.", correct: true },
+        { text: "A supressão completa de impulsos e desejos viscerais.", correct: false }
+      ],
+      explanation: "Correto! Henry Miller propõe que a literatura e a vida florescem na vulnerabilidade, na carne e no erro livre de dogmas."
+    },
+    {
+      author: "Anaïs Nin",
+      excerpt: "“Aprofundamo-nos no labirinto não para nos perdermos, mas para encontrarmos o núcleo indomável do nosso próprio desejo.”",
+      question: "Como Anaïs Nin interpreta a exploração psicológica e erótica na literatura?",
+      options: [
+        { text: "Como um mergulho corajoso na psique e na autonomia íntima.", correct: true },
+        { text: "Como um mero artifício de entretenimento passageiro.", correct: false },
+        { text: "Como um labirinto sem sentido ou significado profundo.", correct: false }
+      ],
+      explanation: "Exato! Para Nin, o diário e a prosa erótica funcionam como instrumentos psicanalíticos de autoconhecimento e libertação feminina."
+    },
+    {
+      author: "Hilda Hilst",
+      excerpt: "“De corpo inteiro, sou a fúria e o delírio. Escrevo porque o real me sufoca e só na linguagem encontro o meu verdadeiro corpo.”",
+      question: "Qual é a principal força motriz da escrita visceral de Hilda Hilst?",
+      options: [
+        { text: "A contenção acadêmica e o recato das formas clássicas.", correct: false },
+        { text: "A repulsa total à poesia e aos temas existenciais.", correct: false },
+        { text: "A intensidade poética, a urgência corporal e a quebra de tabus.", correct: true }
+      ],
+      explanation: "Perfeito! Hilda Hilst une lirismo e escatologia, transformando o texto num ato de absoluta coragem e visceralidade."
+    }
+  ];
+
+  let currentLitStep = 0;
+
+  function initLitLevel() {
+    currentLitStep = 0;
+    renderLitStep();
+  }
+
+  function renderLitStep() {
+    const container = document.getElementById("litCardContainer");
+    const progressFill = document.getElementById("litProgressFill");
+    const stepIndicator = document.getElementById("litStepIndicator");
+
+    if (currentLitStep >= litStages.length) {
+      document.getElementById("litWinOverlay").classList.remove("hidden");
+      return;
+    }
+
+    const data = litStages[currentLitStep];
+    progressFill.style.width = `${((currentLitStep + 1) / litStages.length) * 100}%`;
+    stepIndicator.textContent = `Fase ${currentLitStep + 1} de ${litStages.length}`;
+
+    container.innerHTML = `
+      <div class="lit-author">${data.author}</div>
+      <div class="lit-excerpt">${data.excerpt}</div>
+      <div class="lit-question">${data.question}</div>
+      <div class="lit-options">
+        ${data.options.map((opt, idx) => `
+          <button class="lit-option-btn" data-correct="${opt.correct}">${opt.text}</button>
+        `).join("")}
+      </div>
+      <div id="litFeedback" class="lit-feedback"></div>
+    `;
+
+    const optionButtons = container.querySelectorAll(".lit-option-btn");
+    optionButtons.forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        // Desativa todos
+        optionButtons.forEach(b => b.disabled = true);
+        const isCorrect = e.target.getAttribute("data-correct") === "true";
+        const feedbackEl = document.getElementById("litFeedback");
+
+        if (isCorrect) {
+          e.target.classList.add("correct");
+          feedbackEl.textContent = data.explanation;
+          setTimeout(() => {
+            currentLitStep++;
+            renderLitStep();
+          }, 2400);
+        } else {
+          e.target.classList.add("incorrect");
+          // Destaca a correta
+          optionButtons.forEach(b => {
+            if (b.getAttribute("data-correct") === "true") b.classList.add("correct");
+          });
+          feedbackEl.textContent = "Interpretação incorreta. Analise o trecho novamente e avance quando estiver pronto.";
+          
+          // Permite avançar após erro para não travar o jogador
+          setTimeout(() => {
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "primary-btn purple-theme";
+            nextBtn.style.marginTop = "14px";
+            nextBtn.textContent = "Continuar para a próxima fase";
+            nextBtn.onclick = () => {
+              currentLitStep++;
+              renderLitStep();
+            };
+            container.appendChild(nextBtn);
+          }, 1200);
+        }
+      });
+    });
+  }
+
+  // --- LOOP PRINCIPAL DO JOGO (GERENCIA ANIMAÇÕES E TELA ATIVA) ---
+  function globalLoop(timestamp) {
     if (!lastTime) lastTime = timestamp;
     const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
     lastTime = timestamp;
 
-    update(dt);
-    render(timestamp / 1000);
-    requestAnimationFrame(loop);
+    if (stages.level1.classList.contains("active")) {
+      updateCupids(dt);
+      renderCupids(timestamp / 1000);
+    }
+
+    requestAnimationFrame(globalLoop);
   }
 
-  window.addEventListener("resize", resize);
+  // Event Listeners globais
+  window.addEventListener("resize", resizeCupidCanvas);
   canvas.addEventListener("pointerdown", handlePointerDown);
   canvas.addEventListener("pointermove", handlePointerMove);
-  restartBtn.addEventListener("click", resetGame);
+  document.getElementById("restartAllBtn").addEventListener("click", () => {
+    resetGameCupids();
+    document.getElementById("litWinOverlay").classList.add("hidden");
+    switchStage("prologue");
+  });
 
-  resize();
-  resetGame();
-  requestAnimationFrame(loop);
+  // Inicialização
+  resizeCupidCanvas();
+  resetGameCupids();
+  requestAnimationFrame(globalLoop);
 })();
